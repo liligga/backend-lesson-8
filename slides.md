@@ -1,0 +1,331 @@
+---
+theme: seriph
+background: https://cover.sli.dev
+title: Урок 8
+info: |
+  ## Backend Lesson 8
+class: text-center
+drawings:
+  persist: false
+transition: slide-left
+mdc: true
+---
+
+# Добро пожаловать
+
+---
+layout: two-cols
+---
+
+### Внешний ключ (Foreign Key) в SQL
+
+**Внешний ключ** — это ключ, используемый для связи двух таблиц. Это поле (или набор полей) в одной таблице, которое ссылается на **первичный ключ (Primary Key)** в другой таблице.
+
+Таблица, содержащая внешний ключ, называется дочерней, а таблица, на которую он ссылается, — родительской.
+
+::right::
+
+**Пример:**
+- У нас есть таблицы `authors` (авторы) и `books` (книги).
+- Каждая книга написана одним автором.
+- В таблице `books` будет столбец `author_id`, который указывает на `id` автора, написавшего книгу.
+
+
+```sql
+CREATE TABLE authors (
+    id INT PRIMARY KEY,
+    name VARCHAR(255)
+);
+
+CREATE TABLE books (
+    id INT PRIMARY KEY,
+    title VARCHAR(255),
+    author_id INT,
+    FOREIGN KEY (author_id) REFERENCES authors(id)
+);
+```
+
+---
+
+### Отношения между таблицами в SQL
+
+В реляционной базе данных мы можем определять отношения между таблицами. Это помогает поддерживать целостность данных и отражать реальные связи между ними.
+
+Существует три основных типа отношений:
+
+- **Один-к-одному (One-to-One)**
+- **Один-ко-многим (One-to-Many)**
+- **Многие-ко-многим (Many-to-Many)**
+
+Эти отношения устанавливаются с помощью первичных и внешних ключей.
+
+---
+
+### Отношение Один-к-одному (One-to-One)
+
+Каждая запись в Таблице А может быть связана только с одной записью в Таблице Б, и наоборот.
+
+**Пример из реального мира:** `Человек` и его `Паспорт`.
+У каждого человека может быть только один действующий паспорт (определенной страны), и каждый паспорт выдан только одному человеку.
+
+**Как это создается:**
+Это достигается путем размещения внешнего ключа в одной таблице, который ссылается на другую, и добавления ограничения `UNIQUE` к этому столбцу внешнего ключа.
+
+
+```sql
+CREATE TABLE persons (
+    id INT PRIMARY KEY,
+    first_name TEXT,
+    last_name TEXT
+);
+
+CREATE TABLE passports (
+    id INT PRIMARY KEY,
+    passport_number TEXT UNIQUE,
+    person_id INT UNIQUE, -- Ограничение UNIQUE здесь ключевое
+    FOREIGN KEY (person_id) REFERENCES persons(id)
+);
+```
+
+---
+
+### Отношение Один-ко-многим (One-to-Many)
+
+Запись в Таблице А может быть связана с несколькими записями в Таблице Б, но запись в Таблице Б может быть связана только с одной записью в Таблице А.
+
+**Пример из реального мира:** `Автор` и его `Книги`.
+Один автор может написать много книг, но каждая книга (в этой простой модели) написана только одним автором.
+
+**Как это создается:**
+Это самый распространенный тип отношений. Он создается путем добавления внешнего ключа на сторону "многих", который ссылается на сторону "одного".
+
+```sql
+CREATE TABLE authors (
+    id INT PRIMARY KEY,
+    name TEXT
+);
+
+CREATE TABLE books (
+    id INT PRIMARY KEY,
+    title TEXT,
+    price INT,
+    author_id INT,
+    FOREIGN KEY (author_id) REFERENCES authors(id)
+);
+```
+
+---
+
+### Отношение Многие-ко-многим (Many-to-Many)
+
+Запись в Таблице А может быть связана с несколькими записями в Таблице Б, и запись в Таблице Б также может быть связана с несколькими записями в Таблице А.
+
+**Пример из реального мира:** `Студенты` и `Курсы`.
+Студент может записаться на много курсов, и на курсе может быть много студентов.
+
+**Как это создается:**
+Это отношение требует третьей, **связующей таблицы** (junction table). Эта таблица хранит отношения, имея внешние ключи к обеим таблицам.
+
+---
+
+### Отношение Многие-ко-многим (Many-to-Many)
+
+```sql
+CREATE TABLE students (
+    id INT PRIMARY KEY,
+    name TEXT
+);
+
+CREATE TABLE courses (
+    id INT PRIMARY KEY,
+    name TEXT
+);
+-- Связующая таблица
+CREATE TABLE enrollments (
+    student_id INT,
+    course_id INT,
+    PRIMARY KEY (student_id, course_id), -- Составной первичный ключ
+    FOREIGN KEY (student_id) REFERENCES students(id),
+    FOREIGN KEY (course_id) REFERENCES courses(id)
+);
+```
+
+---
+
+### JOIN - объединение таблиц
+
+JOIN используется для объединения строк из двух или более таблиц на основе определенного условия.
+
+Существует несколько типов JOIN:
+
+1. INNER JOIN
+2. LEFT JOIN
+3. RIGHT JOIN
+4. FULL JOIN
+5. CROSS JOIN
+6. SELF JOIN
+
+---
+
+### INNER JOIN
+
+INNER JOIN возвращает только те строки, которые имеют совпадающие значения в обеих таблицах.
+
+**Пример:**
+
+```sql
+SELECT 
+    books.title, 
+    authors.name AS author_name
+FROM books
+INNER JOIN authors ON books.author_id = authors.id;
+```
+
+Где `ON books.author_id = authors.id` - это условие, которое определяет, как мы объединяем таблицы.
+
+---
+
+### LEFT JOIN(LEFT OUTER JOIN)
+
+LEFT JOIN возвращает все строки из левой таблицы (authors), и совпадающие строки из правой таблицы (books). Если в правой таблице нет совпадений, то возвращаются NULL.
+
+**Пример:**
+
+```sql
+SELECT 
+    authors.name AS author_name,
+    books.title
+FROM authors
+LEFT JOIN books ON authors.id = books.author_id;
+```
+
+---
+
+### RIGHT JOIN(RIGHT OUTER JOIN)
+
+RIGHT JOIN возвращает все строки из правой таблицы (books), и совпадающие строки из левой таблицы (authors). Если в левой таблице нет совпадений, то возвращаются NULL.
+
+В SQLite RIGHT JOIN не поддерживается, но можно использовать LEFT JOIN с обратной связью.
+
+**Пример:**
+
+```sql
+SELECT 
+    books.title,
+    authors.name AS author_name
+FROM books
+LEFT JOIN authors ON books.author_id = authors.id;
+```
+
+---
+
+### FULL JOIN(FULL OUTER JOIN)
+
+FULL JOIN возвращает все строки из обеих таблиц, и совпадающие строки из обеих таблиц. Если в одной из таблиц нет совпадений, то возвращаются NULL.
+
+В SQLite FULL JOIN не поддерживается, но можно использовать UNION ALL в сочетании с LEFT JOIN и RIGHT JOIN.
+
+**Пример в PostgreSQL:**
+
+```sql
+SELECT 
+    authors.name AS author_name,
+    books.title
+FROM authors
+FULL OUTER JOIN books ON authors.id = books.author_id;
+```
+
+---
+
+### FULL JOIN(FULL OUTER JOIN)
+
+**Пример в SQLite:**
+
+```sql
+SELECT 
+    authors.name AS author_name,
+    books.title
+FROM authors
+LEFT JOIN books ON authors.id = books.author_id
+UNION ALL
+SELECT 
+    authors.name AS author_name,
+    books.title
+FROM books
+LEFT JOIN authors ON books.author_id = authors.id;
+```
+
+Где UNION ALL используется для объединения результатов двух SELECT-запросов.
+
+---
+
+### CROSS JOIN
+
+CROSS JOIN возвращает все возможные комбинации строк из двух таблиц(декартово произведение)
+ 
+Например комбинации цветов и размеров одежды и тд
+
+**Пример:**
+
+```sql
+SELECT 
+    colors.color,
+    sizes.size
+FROM colors
+CROSS JOIN sizes;
+```
+
+Примечание: Это может привести к очень большим объемам данных и следует использовать с осторожностью.
+
+---
+
+### Агрегатные функции
+
+Агрегатные функции выполняют вычисления над набором значений и возвращают одно значение.
+
+Есть следующие агрегатные функции:
+
+- COUNT() - возвращает количество строк
+- SUM() - возвращает сумму значений
+- AVG() - возвращает среднее значение
+- MAX() - возвращает максимальное значение
+- MIN() - возвращает минимальное значение
+
+---
+
+### Агрегатные функции
+
+**Пример:**
+
+```sql
+SELECT 
+    COUNT(*) AS total_books,
+    AVG(price) AS average_price,
+    MAX(price) AS max_price,
+    MIN(price) AS min_price,
+    SUM(price) AS total_price
+FROM books;
+```
+
+--- 
+
+### Группировка данных
+
+GROUP BY используется для группировки строк на основе одного или нескольких столбцов.
+
+**Пример:**
+
+```sql
+SELECT 
+    author_id,
+    COUNT(*) AS total_books,
+    AVG(price) AS average_price,
+    MAX(price) AS max_price,
+    MIN(price) AS min_price,
+    SUM(price) AS total_price
+FROM books
+GROUP BY author_id;
+```
+
+Здесь мы группируем книги по автору и вычисляем количество книг, среднюю цену, максимальную цену, минимальную цену и общую сумму для каждого автора.
+
