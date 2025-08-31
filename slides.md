@@ -113,7 +113,7 @@ layout: two-cols
 
 #### Внешний ключ (Foreign Key) в SQL
 
-**Внешний ключ** — это ключ, используемый для связи двух таблиц. Это поле (или набор полей) в одной таблице, которое ссылается на **первичный ключ (Primary Key)** в другой таблице.
+**Внешний ключ** — это ключ, используемый для связи двух таблиц. Это поле (или набор полей) в одной таблице, которое ссылается на **первичный ключ (Primary Key)** в другой таблице. `REFERENCES` - переводится как "ссылается".
 
 Таблица, содержащая внешний ключ, называется дочерней, а таблица, на которую он ссылается, — родительской.
 
@@ -127,14 +127,14 @@ layout: two-cols
 
 ```sql
 CREATE TABLE authors (
-    id INT PRIMARY KEY,
-    name VARCHAR(255)
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL
 );
 
 CREATE TABLE books (
-    id INT PRIMARY KEY,
-    title VARCHAR(255),
-    author_id INT,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL,
+    author_id INTEGER,
     FOREIGN KEY (author_id) REFERENCES authors(id)
 );
 ```
@@ -168,15 +168,17 @@ CREATE TABLE books (
 
 ```sql
 CREATE TABLE persons (
-    id INT PRIMARY KEY,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     first_name TEXT,
     last_name TEXT
 );
 
 CREATE TABLE passports (
-    id INT PRIMARY KEY,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     passport_number TEXT UNIQUE,
-    person_id INT UNIQUE, -- Ограничение UNIQUE здесь ключевое
+    person_id INTEGER UNIQUE, 
+    -- Ограничение UNIQUE здесь ключевое, 
+    -- чтобы не было дублирования паспортов одного человека
     FOREIGN KEY (person_id) REFERENCES persons(id)
 );
 ```
@@ -195,15 +197,15 @@ CREATE TABLE passports (
 
 ```sql
 CREATE TABLE authors (
-    id INT PRIMARY KEY,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT
 );
 
 CREATE TABLE books (
-    id INT PRIMARY KEY,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     title TEXT,
-    price INT,
-    author_id INT,
+    price INTEGER,
+    author_id INTEGER,
     FOREIGN KEY (author_id) REFERENCES authors(id)
 );
 ```
@@ -226,21 +228,22 @@ CREATE TABLE books (
 
 ```sql
 CREATE TABLE students (
-    id INT PRIMARY KEY,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT
 );
 
 CREATE TABLE courses (
-    id INT PRIMARY KEY,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT
 );
 -- Связующая таблица
 CREATE TABLE enrollments (
-    student_id INT,
-    course_id INT,
+    student_id INTEGER,
+    course_id INTEGER,
     PRIMARY KEY (student_id, course_id), -- Составной первичный ключ
     FOREIGN KEY (student_id) REFERENCES students(id),
     FOREIGN KEY (course_id) REFERENCES courses(id)
+    -- Два внешних ключа, один на студентов, другой на курсы
 );
 ```
 
