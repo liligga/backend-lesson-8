@@ -280,6 +280,8 @@ INNER JOIN authors ON books.author_id = authors.id;
 
 Где `ON books.author_id = authors.id` - это условие, которое определяет, как мы объединяем таблицы.
 
+В этом запросе не возвращаются книги, у которых не указан автор и авторы у которых нет книг.
+
 ---
 
 #### LEFT JOIN(LEFT OUTER JOIN)
@@ -301,6 +303,16 @@ LEFT JOIN books ON authors.id = books.author_id;
 #### RIGHT JOIN(RIGHT OUTER JOIN)
 
 RIGHT JOIN возвращает все строки из правой таблицы (books), и совпадающие строки из левой таблицы (authors). Если в левой таблице нет совпадений, то возвращаются NULL.
+
+**Пример:**
+
+```sql
+SELECT 
+    authors.name AS author_name,
+    books.title
+FROM authors
+RIGHT JOIN books ON authors.id = books.author_id;
+```
 
 В SQLite RIGHT JOIN не поддерживается, но можно использовать LEFT JOIN с обратной связью.
 
@@ -415,11 +427,11 @@ GROUP BY используется для группировки строк на 
 ```sql
 SELECT 
     author_id,
-    COUNT(*) AS total_books,
-    AVG(price) AS average_price,
-    MAX(price) AS max_price,
-    MIN(price) AS min_price,
-    SUM(price) AS total_price
+    COUNT(*) AS total_books, -- Возвращает количество книг для каждого автора
+    AVG(price) AS average_price, -- Возвращает среднюю цену книг для каждого автора
+    MAX(price) AS max_price, -- Возвращает максимальную цену книг для каждого автора
+    MIN(price) AS min_price, -- Возвращает минимальную цену книг для каждого автора
+    SUM(price) AS total_price -- Возвращает общую сумму цен книг для каждого автора
 FROM books
 GROUP BY author_id;
 ```
